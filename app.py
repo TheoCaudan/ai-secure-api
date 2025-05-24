@@ -1,6 +1,28 @@
+import logging
+from datetime import datetime
 from flask import Flask, request, jsonify
 import joblib
 import numpy as np
+from functools import wraps
+
+API_KEY = "supersecretkey123"
+
+def require_api_key(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        key = request.headers.get("x-api-key")
+        if key and key == API_KEY:
+            return f(*args, **kwargs)
+        else:
+            logging.warning(f"unauthorized access attempt from {request.remote_addr}")
+            return jsonify({"error": "unauthorized"}), 401
+    return decorated
+
+logging.basicConfig(
+    filename='logs/access.log',
+    level=logging.INFO,
+    format='[%(asctime)s] %(levelname)s - %(message)s'
+)
 
 # Load model
 model = joblib.load("model.joblib")
@@ -8,8 +30,16 @@ model = joblib.load("model.joblib")
 # Init flask
 app = Flask(__name__)
 
+@app.before_request
+def log_request_info():
+    ip = request.remote_addr
+    path = request.path
+    method = request.method
+    logging.info(f"{ip} called {method} {path}")
+
 # Predict route
 @app.route("/predict", methods=["POST"])
+@require_api_key
 def predict():
     data = request.get_json()
     if not data or "features" not in data:
