@@ -154,3 +154,111 @@ This mini-project is a hands-on example of how to serve an ML model securely thr
 - Deploy to the cloud (e.g., AWS, Heroku, Railway).
 
 Let me know if you want help generating a `Dockerfile` or `requirements.txt`!
+
+---
+
+## Docker Support
+
+You can run this project in a container using Docker.
+
+### 1. Build the Docker image
+
+```bash
+docker build -t secure-ml-api .
+```
+
+### 2. Run the container
+
+```bash
+docker run -p 5000:5000 secure-ml-api
+```
+
+The API will be available at `http://localhost:5000`.
+
+### Dockerfile
+
+### .dockerignore
+
+To improve build efficiency and reduce image size, make sure you include a `.dockerignore` file. Here's a recommended example:
+
+```
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+*.log
+*.joblib
+venv/
+.env
+logs/
+```
+
+
+This is the Dockerfile used:
+
+```dockerfile
+FROM python:3.10-slim
+
+WORKDIR /app
+
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 5000
+
+CMD ["python", "app.py"]
+```
+
+---
+
+## Docker Support
+
+You can run the project using Docker for easier deployment.
+
+### 1. Build the Docker image
+
+```bash
+docker build -t secure-ml-api .
+```
+
+### 2. Run the container
+
+```bash
+docker run -p 5000:5000 secure-ml-api
+```
+
+This exposes the API on `http://localhost:5000`.
+
+Make sure your project directory contains:
+
+- A valid `Dockerfile`:
+
+```Dockerfile
+FROM python:3.10-slim
+
+WORKDIR /app
+
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 5000
+
+CMD ["python", "app.py"]
+```
+
+- A `requirements.txt` file listing dependencies:
+
+```txt
+Flask
+scikit-learn
+joblib
+numpy
+```
+
+---
