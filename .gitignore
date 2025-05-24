@@ -1,0 +1,16 @@
+# Python cache and artifacts
+__pycache__/
+*.py[cod]
+
+# Logs and model
+logs/
+*.log
+model.joblib
+
+# Environment
+.env
+venv/
+
+# Systems
+.DS_Store
+Thumbs.db
