@@ -1,9 +1,14 @@
+import os
 import logging
 from datetime import datetime
 from flask import Flask, request, jsonify
 import joblib
 import numpy as np
 from functools import wraps
+
+if not os.path.exists("logs"):
+    os.makedirs("logs")
+
 
 API_KEY = "supersecretkey123"
 
