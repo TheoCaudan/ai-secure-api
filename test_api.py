@@ -21,4 +21,3 @@ def test_predict_unauthorized():
         json={"features": [5.1, 3.5, 1.4, 0.2]}
     )
     assert response.status_code == 401
-
