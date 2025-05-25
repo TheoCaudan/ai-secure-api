@@ -1,0 +1,39 @@
+name: CI - AI Secure API
+
+on:
+    push:
+        branches: [dev]
+    pull_request:
+        branches: [dev]
+
+jobs:
+    ci:
+        runs-on: alpine-latest
+
+        steps:
+            - name: Clone repo
+              uses: actions/checkout@v3
+            
+            - name: Setup python
+              uses: actions/setup-python@v4
+              with:
+                python-version: '3.13'
+
+            - name: Install dependencies
+              run: |
+                python -m pip install --upgrade pip
+                pip install -r requirements.txt
+                pip install bandit pytest requests
+
+            - name: Security scan (bandit)
+              run: bandit -r . -ll -ii
+
+            - name: Test API with pytest
+              run: |
+                nohup python app.py &
+                sleep 5
+                pytest test_api.py
+
+            - name: Build docker image
+              run: docker build -t ai-secure-api .
+
