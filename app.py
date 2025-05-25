@@ -12,6 +12,7 @@ if not os.path.exists("logs"):
 
 API_KEY = "supersecretkey123"
 
+
 def require_api_key(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -23,11 +24,13 @@ def require_api_key(f):
             return jsonify({"error": "unauthorized"}), 401
     return decorated
 
+
 logging.basicConfig(
     filename='logs/access.log',
     level=logging.INFO,
     format='[%(asctime)s] %(levelname)s - %(message)s'
 )
+
 
 # Load model
 model = joblib.load("model.joblib")
