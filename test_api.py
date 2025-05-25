@@ -1,5 +1,6 @@
 import requests
 
+
 def test_predict_ok():
     response = requests.post(
         "http://localhost:5000/predict",
@@ -11,6 +12,7 @@ def test_predict_ok():
     )
     assert response.status_code == 200
     assert "prediction" in response.json()
+
 
 def test_predict_unauthorized():
     response = requests.post(

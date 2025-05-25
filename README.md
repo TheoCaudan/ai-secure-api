@@ -63,9 +63,12 @@ This saves `model.joblib`, used by the API.
 
 ---
 
-### 2. Start the Flask server
+### 2. Start the Flask server (Development)
+
+For development, you can run the Flask app locally with debugging enabled:
 
 ```bash
+export FLASK_ENV=development
 python app.py
 ```
 
@@ -74,7 +77,8 @@ The API will be available at:
 ```
 http://127.0.0.1:5000
 ```
-
+### Note: 
+For production, the app uses gunicorn (see Docker instructions below). Do not use debug=True in production as it poses a security risk.
 ---
 
 ### 3. Make a prediction request
@@ -159,7 +163,7 @@ Let me know if you want help generating a `Dockerfile` or `requirements.txt`!
 
 ## Docker Support
 
-You can run this project in a container using Docker.
+You can run this project in a container using Docker. The container uses gunicorn for production-grade deployment.
 
 ### 1. Build the Docker image
 
@@ -176,6 +180,23 @@ docker run -p 5000:5000 secure-ml-api
 The API will be available at `http://localhost:5000`.
 
 ### Dockerfile
+
+The Dockerfile uses gunicorn to serve the app in production:
+
+```dockerfile
+FROM python:3.10-slim-bookworm
+
+WORKDIR /app
+
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 5000
+
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "app:app"]
+```
 
 ### .dockerignore
 
@@ -194,71 +215,3 @@ venv/
 .env
 logs/
 ```
-
-
-This is the Dockerfile used:
-
-```dockerfile
-FROM python:3.10-slim
-
-WORKDIR /app
-
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
-
-EXPOSE 5000
-
-CMD ["python", "app.py"]
-```
-
----
-
-## Docker Support
-
-You can run the project using Docker for easier deployment.
-
-### 1. Build the Docker image
-
-```bash
-docker build -t secure-ml-api .
-```
-
-### 2. Run the container
-
-```bash
-docker run -p 5000:5000 secure-ml-api
-```
-
-This exposes the API on `http://localhost:5000`.
-
-Make sure your project directory contains:
-
-- A valid `Dockerfile`:
-
-```Dockerfile
-FROM python:3.10-slim
-
-WORKDIR /app
-
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
-
-EXPOSE 5000
-
-CMD ["python", "app.py"]
-```
-
-- A `requirements.txt` file listing dependencies:
-
-```txt
-Flask
-scikit-learn
-joblib
-numpy
-```
-
----
