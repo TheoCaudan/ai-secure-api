@@ -2,9 +2,9 @@ name: CI - AI Secure API
 
 on:
     push:
-        branches: [dev]
+        branches: [main, dev]
     pull_request:
-        branches: [dev]
+        branches: [main, dev]
 
 jobs:
     ci:
@@ -12,28 +12,43 @@ jobs:
 
         steps:
             - name: Clone repo
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
             
             - name: Setup python
-              uses: actions/setup-python@v4
+              uses: actions/setup-python@v5
               with:
-                python-version: '3.10.13-slim-bullseye'
+                python-version: '3.10'
 
             - name: Install dependencies
               run: |
                 python -m pip install --upgrade pip
                 pip install -r requirements.txt
-                pip install bandit pytest requests
+                pip install -r requirements-dev.txt
+                pip install bandit pytest flake8
+
+            - name: Run linter (flake8)
+              run: flake8 . --max-line-length=88 --extend-ignore=E203
 
             - name: Security scan (bandit)
-              run: bandit -r . -ll -ii
+              run: bandit -r *.py -ll -ii
 
             - name: Test API with pytest
               run: |
-                nohup python app.py &
-                sleep 5
-                pytest test_api.py
+                python app.py &
+                sleep 10
+                pytest test_api.py --verbose
+                kill $(lsof -t -i:5000)
 
             - name: Build docker image
               run: docker build -t ai-secure-api .
 
+            - name: Test docker image
+              run: |
+                docker run -d -p 5000:5000 --name test-container ai-secure-api
+                sleep 10
+                curl --fail http://localhost:5000/predict \
+                  -H "Content-Type: application/json" \
+                  -H "x-api-key: supersecretkey123" \
+                  -d '{"features": [5.1, 3.5, 1.4, 0.2]}'
+                docker stop test-container
+                docker rm test-container
