@@ -2,15 +2,15 @@
 
 ## Overview
 
-This project demonstrates how to build a simple yet secure REST API in Python using Flask that serves predictions from a machine learning model (Random Forest trained on the Iris dataset). The main focus is on API security by implementing API key authentication.
+This project demonstrates how to build a simple yet secure REST API in Python using Flask that serves predictions from a pre-trained machine learning model (Random Forest trained on the Iris dataset). The main focus is on API security through API key authentication.
 
-The API accepts feature data via POST requests, runs predictions through the trained model, and returns the predicted class. It also logs all access attempts including unauthorized ones.
+The API accepts feature data via POST requests, runs predictions using the pre-trained model, and returns the predicted class. It also logs all access attempts, including unauthorized ones.
 
 ---
 
 ## Features
 
-- **AI Model**: Random Forest classifier trained on the Iris dataset.
+- **AI Model**: Pre-trained Random Forest classifier using the Iris dataset (saved as `model.joblib`).
 - **Flask REST API** exposing a `/predict` endpoint.
 - **API Key authentication** via the `x-api-key` HTTP header.
 - **Request logging** with timestamps, IP addresses, and request details.
@@ -23,8 +23,7 @@ The API accepts feature data via POST requests, runs predictions through the tra
 ```
 .
 ├── app.py                 # Main Flask API code
-├── model.joblib           # Trained ML model saved with joblib
-├── train_model.py         # Script to train and save the model
+├── model.joblib           # Pre-trained ML model saved with joblib
 ├── logs/
 │   └── access.log         # Log file for API requests
 └── README.md              # This README file
@@ -51,21 +50,15 @@ pip install flask scikit-learn joblib numpy
 
 ## Usage
 
-### 1. Train the model
+### 1. Ensure `model.joblib` is Available
 
-Run the training script:
-
-```bash
-python train_model.py
-```
-
-This saves `model.joblib`, used by the API.
+The API relies on a pre-trained model file named `model.joblib`. Ensure this file is present in the project root. If not provided, you can generate it locally using a training script (see "Customization" section for details), but this is not required for the current workflow.
 
 ---
 
-### 2. Start the Flask server (Development)
+### 2. Start the Flask Server (Development)
 
-For development, you can run the Flask app locally with debugging enabled:
+For development, run the Flask app locally with debugging enabled:
 
 ```bash
 export FLASK_ENV=development
@@ -77,12 +70,12 @@ The API will be available at:
 ```
 http://127.0.0.1:5000
 ```
-### Note: 
 
-For production, the app uses gunicorn (see Docker instructions below). Do not use debug=True in production as it poses a security risk.
+**Note**: For production, the app uses gunicorn (see Docker instructions below). Do not use `debug=True` in production as it poses a security risk.
+
 ---
 
-### 3. Make a prediction request
+### 3. Make a Prediction Request
 
 Use `curl`, `Postman`, or any HTTP client to test the `/predict` endpoint:
 
@@ -103,7 +96,7 @@ Sample response:
 ## Security
 
 - The `/predict` endpoint is protected by a static API key.
-- Set your API key in the `API_KEY` variable inside `app.py`.
+- Set your API key by editing the `API_KEY` variable in `app.py`.
 - Requests with missing or incorrect keys return:
 
 ```json
@@ -136,14 +129,32 @@ Sample response:
 API_KEY = "your_new_key_here"
 ```
 
-- Replace `model.joblib` with any other trained model that matches the expected input shape.
+- Replace `model.joblib` with any other pre-trained model that matches the expected input shape (4 features for the Iris dataset).
+- To generate `model.joblib` locally (if needed), you can use a training script. For example, create a `train_model.py` with:
+
+```python
+from sklearn.datasets import load_iris
+from sklearn.ensemble import RandomForestClassifier
+import joblib
+
+# Load and train model
+iris = load_iris()
+model = RandomForestClassifier()
+model.fit(iris.data, iris.target)
+
+# Save model
+joblib.dump(model, 'model.joblib')
+```
+
+Then run `python train_model.py` to create the file.
+
 - Add more endpoints using the same `@require_api_key` decorator to secure them.
 
 ---
 
 ## Conclusion
 
-This mini-project is a hands-on example of how to serve an ML model securely through a REST API using Flask. It shows how to:
+This mini-project is a hands-on example of how to serve a pre-trained ML model securely through a REST API using Flask. It shows how to:
 - Implement API key protection,
 - Monitor access through logging,
 - Handle JSON input and output cleanly,
@@ -166,13 +177,13 @@ Let me know if you want help generating a `Dockerfile` or `requirements.txt`!
 
 You can run this project in a container using Docker. The container uses gunicorn for production-grade deployment.
 
-### 1. Build the Docker image
+### 1. Build the Docker Image
 
 ```bash
 docker build -t secure-ml-api .
 ```
 
-### 2. Run the container
+### 2. Run the Container
 
 ```bash
 docker run -p 5000:5000 secure-ml-api
