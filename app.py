@@ -1,10 +1,10 @@
 import os
 import logging
-from datetime import datetime
 from flask import Flask, request, jsonify
 import joblib
 import numpy as np
 from functools import wraps
+
 
 if not os.path.exists("logs"):
     os.makedirs("logs")
@@ -35,12 +35,14 @@ model = joblib.load("model.joblib")
 # Init flask
 app = Flask(__name__)
 
+
 @app.before_request
 def log_request_info():
     ip = request.remote_addr
     path = request.path
     method = request.method
     logging.info(f"{ip} called {method} {path}")
+
 
 # Predict route
 @app.route("/predict", methods=["POST"])
@@ -56,6 +58,7 @@ def predict():
         return jsonify({"prediction": int(prediction[0])})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 # Start app
 if __name__ == "__main__":

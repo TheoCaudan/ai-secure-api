@@ -7,7 +7,7 @@ data = load_iris()
 X, y = data.data, data.target
 
 # Train model
-model= RandomForestClassifier()
+model = RandomForestClassifier()
 model.fit(X, y)
 
 # Save trained model
